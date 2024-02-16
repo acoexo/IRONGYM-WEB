@@ -1,0 +1,21 @@
+{
+    "name": "2daw/ironweb",
+    "description": "proyecto",
+    "authors": [
+        {
+            "name": "acoexo",
+            "email": "acseoyo04@gmail.com"
+        }
+    ],
+    "require": {
+        "intervention/image": "^2.5",
+        "vlucas/phpdotenv":"^5.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "MVC\\" : "./",
+            "Controllers\\" : "./controllers",
+            "Model\\" : "./models"
+        }
+    }
+}

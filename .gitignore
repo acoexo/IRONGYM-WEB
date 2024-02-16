@@ -1,0 +1,9 @@
+# Excluir directorios de dependencias
+/vendor
+/node_modules
+
+# Excluir log de errores
+/errorlog
+
+# Excluir archivo de configuración de entorno
+/includes/.env
