@@ -27,8 +27,8 @@
                 <option value="5">VERY HEAVY (2 SESSIONS/DAY)</option>
             </select>
             <input type="submit" name="signup" class="submit--button" value="UPDATE">
-            <a href="/main_page.php" class="exit--button">Salir</a>
-            <a href="/admin/alertdelete.php" class="exit--button">Borrar datos</a>
+            <a href="/user/mainpage" class="exit--button">Salir</a>
+            <a href="/user/delete" class="exit--button">Borrar datos</a>
         </form>
     </section>
     <section class="errores">

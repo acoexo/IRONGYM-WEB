@@ -37,6 +37,17 @@ class PageController {
     public static function adminlogin(Router $router){
         $router->render('auth/adminlogin');
     }
+    public static function delteUser(Router $router){
+        session_start();
+        $usr = $_SESSION['username'];
+        $usrData = User::loadUserData($usr);
+        $usrStats = User::loadStatisticData($usrData['id']);
+        $router->render('user/delete' , [
+            'user'=>$usr,
+            'usrData'=>$usrData,
+            'usrStats'=>$usrStats
+        ]);
+    }
     public static function adminpage(Router $router){
         $admin = Admin::get();
         $router->render('admin/adminmainpage', [

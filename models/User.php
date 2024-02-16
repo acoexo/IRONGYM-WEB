@@ -7,15 +7,16 @@ use PDOException;
 
 class User extends ActiveRecord {
     protected static $tabla = 'users';
-    protected static $columnasDB = ['id','name', 'date', 'gen', 'tfn', 'username', 'email', 'password'];
-    private static $id;
+    protected static $columnasDB = ['id','name', 'date', 'gen', 'tfn', 'username', 'email', 'password', 'admin'];
+    private $id;
     private $name;
     private $date;
     private $gen;
     private $tfn;
-    private static $username;
+    private $username;
     private $email;
     private $password;
+    private $admin;
 
     public function __construct($args = []) {
         $this->id = $args['id'] ?? null;
@@ -61,9 +62,7 @@ class User extends ActiveRecord {
         $resultado = $statement->fetch(PDO::FETCH_ASSOC);
 
         if (!$resultado) {
-            var_dump($resultado);
             self::$errores[] = 'El Usuario No Existe';
-            var_dump(self::$errores);
             return;
         }
 
@@ -80,14 +79,13 @@ class User extends ActiveRecord {
         return self::$errores;
     }
 
-    private function setId($username, $pwd) {
-        $queryUsers = "SELECT id FROM users WHERE username = :username AND password = :pwd";
-        $statementUsers = self::$db->prepare($queryUsers);
-        $statementUsers->bindParam(':username', $username, PDO::PARAM_STR);
-        $statementUsers->bindParam(':pwd', $pwd, PDO::PARAM_STR);
+    public function isAdmin($usnm){
+        //Comprobar si el usuario tiene permisos de administrador
+        $adminQuery= "SELECT admin FROM users WHERE username=:usnm";
+        $statementUsers = self::$db->prepare($adminQuery);
+        $statementUsers->bindParam(':usnm', $usnm, PDO::PARAM_STR);
         $statementUsers->execute();
-        $rowU = $statementUsers->fetch(PDO::FETCH_ASSOC);
-        $this->id = $_SESSION['id'] = $rowU;
+        return $statementUsers->fetchColumn(); 
     }
 
     public function comprobarPassword($resultado) {
@@ -98,10 +96,76 @@ class User extends ActiveRecord {
         }
         return $autenticado;
     }
+    public function comprobarPassword2($usnm, $pwd){
+        $query="SELECT * FROM users WHERE username=:usnm";
+        $statement=self::$db->prepare($query);
+        $statement->bindParam(":usnm",$usnm, PDO::PARAM_STR);
+        if(!$statement->execute()) throw new \Exception('No se pudo ejecutar la consulta');
+        $user=$statement->fetch(PDO::FETCH_ASSOC);
+        $autenticado = password_verify($pwd, $user['password']);
+        if (!$autenticado) {
+            self::$errores[] = 'Verifique los datos suministrados';
+        }  
+        return $autenticado;
+    }
+    
 
     public function getUsuario() {
         return isset($_SESSION['id']) ? $_SESSION['id'] : null;
 
+    }
+    public function delete($pwd){
+        $id = $this->obID($_SESSION["username"]);
+
+        // Eliminar estadísticas
+        $queryStats = "DELETE FROM stadistics WHERE userid = :id";
+        $statementStats = self::$db->prepare($queryStats);
+        $statementStats->bindValue(":id", $id);
+        $successStats = $statementStats->execute();
+    
+        // Verificar si hubo errores al eliminar estadísticas
+        if (!$successStats) {
+            $errorStats = $statementStats->errorInfo();
+        }else{
+            // Eliminar usuario
+            $queryUser = "DELETE FROM users WHERE id = :id AND password = :pwd";
+            $statementUser = self::$db->prepare($queryUser);
+            $statementUser->bindValue(":id", $id);
+            $statementUser->bindValue(":pwd", $pwd);
+            $successUser = $statementUser->execute();
+        
+            // Verificar si hubo errores al eliminar el usuario
+            if (!$successUser) {
+                $errorUser = $statementUser->errorInfo();
+            }
+        
+            // Limpiar la sesión
+            session_unset(); 
+        }
+    
+        
+    
+        // Verificar si ambas consultas se ejecutaron correctamente
+        if ($successStats && $successUser) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    public function force(){
+        $queryUser = "DELETE FROM users WHERE id = :id AND password = :pwd";
+        $statementUser = self::$db->prepare($queryUser);
+        $statementUser->bindValue(":id", 1);
+        $statementUser->bindValue(":pwd", 1234);
+        $successUser = $statementUser->execute();
+        return $successUser;
+    }
+    
+    public function obID($usr){
+        $sql = "SELECT id FROM users WHERE username = '$usr' ";
+        $result = self::$db->query($sql);
+        $obj = $result->fetchObject();
+        return $obj->id;
     }
     public function createUser(){
         try {
@@ -121,8 +185,8 @@ class User extends ActiveRecord {
 
     public static function insertExampleUser() {
         try {
-            $query = "INSERT INTO users (name, date, gen, tfn, img, username, email, password) 
-            VALUES ('Acoexo', '2004-10-18', 'H', 123456789, NULL, 'acoexo', 'johndoe@example.com', :pass);";
+            $query = "INSERT INTO users (name, date, gen, tfn, img, username, email, password, admin) 
+            VALUES ('Acoexo', '2004-10-18', 'H', 123456789, NULL, 'acoexo', 'johndoe@example.com', :pass, true);";
             $stm = self::$db->prepare($query);
             $password = password_hash("123456", PASSWORD_DEFAULT);
             $stm->bindValue(":pass", $password, PDO::PARAM_STR);
