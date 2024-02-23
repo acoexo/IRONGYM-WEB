@@ -48,13 +48,29 @@ class PageController {
             'usrStats'=>$usrStats
         ]);
     }
-    public static function adminpage(Router $router){
-        $admin = Admin::get();
-        $router->render('admin/adminmainpage', [
-            'admin' => $admin
+    public static function updateUser(Router $router){
+        session_start();
+        $usr = $_SESSION['username'];
+        $usrData = User::loadUserData($usr);
+        $usrStats = User::loadStatisticData($usrData['id']);
+        $router->render('user/update' , [
+            'user'=>$usr,
+            'usrData'=>$usrData,
+            'usrStats'=>$usrStats
         ]);
     }
-    public static function userUpdate(Router $router){
-        $router->render('user/update');
+    public static function adminpage(Router $router){
+        // $admin = Admin::get();
+        $router->render('admin/adminmainpage'/*, [
+            // 'admin' => $admin
+        ]*/);
+    }
+    public static function createUser(Router $router){
+        $router->render('auth/signup');
+    }
+    public static function reload(Router $router){
+        session_start();
+        session_destroy();
+        $router->render('/paginas/index');
     }
 }

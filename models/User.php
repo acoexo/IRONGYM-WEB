@@ -4,6 +4,8 @@ namespace Model;
 
 use PDO;
 use PDOException;
+use DateTime;
+
 
 class User extends ActiveRecord {
     protected static $tabla = 'users';
@@ -17,6 +19,9 @@ class User extends ActiveRecord {
     private $email;
     private $password;
     private $admin;
+    private $height;
+    private $weight;
+    private $activity_factor;
 
     public function __construct($args = []) {
         $this->id = $args['id'] ?? null;
@@ -25,8 +30,12 @@ class User extends ActiveRecord {
         $this->gen = $args['gen'] ?? '';
         $this->tfn = $args['tfn'] ?? '';
         $this->username = $args['username'] ?? '';
-        $this->email = $args['email'] ?? '';
         $this->password = $args['password'] ?? '';
+        $this->email = $args['email'] ?? '';
+        $this->height = $args['height'] ?? '';
+        $this->weight = $args['weight'] ?? '';
+        $this->activity_factor = $args['activity_factor'] ?? '';
+
     }
     public function getusnm(){
         return $this->username;
@@ -68,6 +77,21 @@ class User extends ActiveRecord {
 
         return $resultado;
     }
+    public function existeUsuario2(){
+        $query = "SELECT * FROM " . self::$tabla . " WHERE username = :username;";
+        $statement = self::$db->prepare($query);
+        $statement->bindParam(':username', $this->username, PDO::PARAM_STR);
+        $statement->execute();
+
+        // $resultado = $statement->fetch(PDO::FETCH_ASSOC);
+        $resultado = $statement->rowCount();
+        if ($resultado===0) {
+            return true;
+        } else{
+            return false;
+        }
+    }
+
 
     public function validar() {
         if (!$this->username) {
@@ -80,7 +104,6 @@ class User extends ActiveRecord {
     }
 
     public function isAdmin($usnm){
-        //Comprobar si el usuario tiene permisos de administrador
         $adminQuery= "SELECT admin FROM users WHERE username=:usnm";
         $statementUsers = self::$db->prepare($adminQuery);
         $statementUsers->bindParam(':usnm', $usnm, PDO::PARAM_STR);
@@ -116,41 +139,35 @@ class User extends ActiveRecord {
     }
     public function delete($pwd){
         $id = $this->obID($_SESSION["username"]);
-
-        // Eliminar estadísticas
-        $queryStats = "DELETE FROM stadistics WHERE userid = :id";
-        $statementStats = self::$db->prepare($queryStats);
-        $statementStats->bindValue(":id", $id);
-        $successStats = $statementStats->execute();
-    
-        // Verificar si hubo errores al eliminar estadísticas
-        if (!$successStats) {
-            $errorStats = $statementStats->errorInfo();
-        }else{
-            // Eliminar usuario
-            $queryUser = "DELETE FROM users WHERE id = :id AND password = :pwd";
-            $statementUser = self::$db->prepare($queryUser);
-            $statementUser->bindValue(":id", $id);
-            $statementUser->bindValue(":pwd", $pwd);
-            $successUser = $statementUser->execute();
+        if($this->comprobarPassword2($_SESSION["username"], $pwd)){
+            $queryStats = "DELETE FROM stadistics WHERE userid = :id";
+            $statementStats = self::$db->prepare($queryStats);
+            $statementStats->bindValue(":id", $id);
+            $successStats = $statementStats->execute();
         
-            // Verificar si hubo errores al eliminar el usuario
-            if (!$successUser) {
-                $errorUser = $statementUser->errorInfo();
+            if (!$successStats) {
+                $errorStats = $statementStats->errorInfo();
+            }else{
+                $queryUser = "DELETE FROM users WHERE id = :id";
+                $statementUser = self::$db->prepare($queryUser);
+                $statementUser->bindValue(":id", $id);
+                $successUser = $statementUser->execute();
+            
+                if (!$successUser) {
+                    $errorUser = $statementUser->errorInfo();
+                }
+                session_unset(); 
             }
-        
-            // Limpiar la sesión
-            session_unset(); 
-        }
-    
-        
-    
-        // Verificar si ambas consultas se ejecutaron correctamente
-        if ($successStats && $successUser) {
-            return true;
-        } else {
+            if ($successStats && $successUser) {
+                return true;
+            } else {
+                return false;
+            }
+
+        }else{
             return false;
         }
+
     }
     public function force(){
         $queryUser = "DELETE FROM users WHERE id = :id AND password = :pwd";
@@ -199,5 +216,78 @@ class User extends ActiveRecord {
         } catch (PDOException $e) {
             die("Error al intentar registrar el usuario: " . $e->getMessage());
         }
+    }
+    public function calcularEdad($fechaNacimiento){
+        $hoy = new DateTime();
+        $fechaNac = new DateTime($fechaNacimiento);
+        $edad = $hoy->diff($fechaNac);
+        return $edad->y;
+    }
+    public function update($logs, $id){
+        $altura = $logs['height'];
+        $peso = $logs['weight'];
+        $actividadFisica = $logs['height'];
+        $query = "UPDATE stadistics SET weight=:peso, height=:altura, activity_factor=actividadFisica WHERE userid=:userid;";
+        $stmt = self::$db->prepare($query);
+        $stmt->bindParam(':userid',  $id);
+
+        $stmt->bindParam(':peso', $peso);
+        $stmt->bindParam(':altura', $altura);
+        $stmt->bindParam(':actividadFisica', $actividadFisica);
+        $resultado = $stmt->execute();
+        if ($resultado) {
+            self::$errores[] = "El usuario se ha actualizado correctamente";
+            return true;
+        } else {
+            self::$errores[] = "Error al registrar estadísticas del usuario.";
+        }
+    }
+
+    public function signup(){
+        $nombre = $this->name;
+        $fNac = $this->date;
+        $num = $this->tfn ;
+        $sexo = $this->gen;
+        $usuario = $this->username;
+        $email = $this->email;
+        $pwd = password_hash($this->password, PASSWORD_DEFAULT);
+        $altura = $this->height;
+        $peso = $this->weight;
+        $actividadFisica = $this->activity_factor;
+        $query = "INSERT INTO users (name, date, gen, tfn, username, email, password) VALUES (:nombre, :fNac, :sexo, :num, :usuario, :email, :pwd)";
+        $stmt= self::$db->prepare($query);
+        $stmt->bindParam(':nombre', $nombre);
+        $stmt->bindParam(':fNac', $fNac);
+        $stmt->bindParam(':sexo', $sexo);
+        $stmt->bindParam(':num', $num);
+        $stmt->bindParam(':usuario', $usuario);
+        $stmt->bindParam(':email', $email);
+        $stmt->bindParam(':pwd', $pwd);
+        $resultado = $stmt->execute();
+        if ($resultado) {
+            $userId =  self::$db->lastInsertId();
+            $age = $this->calcularEdad($fNac);
+
+            $query = "INSERT INTO stadistics (userid, age, weight, height, activity_factor) VALUES (:userId, :age, :peso, :altura, :actividadFisica)";
+            $stmt = self::$db->prepare($query);
+            $stmt->bindParam(':userId', $userId);
+            $stmt->bindParam(':age', $age);
+            $stmt->bindParam(':peso', $peso);
+            $stmt->bindParam(':altura', $altura);
+            $stmt->bindParam(':actividadFisica', $actividadFisica);
+            $resultado = $stmt->execute();
+
+            if ($resultado) {
+                session_start();
+                $_SESSION['username'] = $usuario;
+                self::$errores[] = "El usuario se ha creado correctamente";
+                return true;
+            } else {
+                self::$errores[] = "Error al registrar estadísticas del usuario.";
+            }
+        } else {
+            self::$errores[] = "Error al registrar el usuario.";
+        }
+        return false;
     }
 }

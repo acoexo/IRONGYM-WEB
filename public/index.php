@@ -13,12 +13,14 @@ $router = new Router();
 $router->get('/', [PageController::class, 'index']);
 $router->get('/user/mainpage', [PageController::class, 'mainPageLoader']);
 $router->get('/example/insertUser', [PageController::class, 'example']);
-$router->get('/user/update', [PageController::class, 'userUpdate']);
+$router->get('/admin/mp', [PageController::class, 'adminpage']);
+$router->get('/user/update', [PageController::class, 'updateUser']);
+$router->post('/user/update', [UserController::class, 'update']);
 $router->get('/user/delete', [PageController::class, 'delteUser']);
 $router->post('/user/delete', [UserController::class, 'delete']);
+$router->get('/reload', [PageController::class, 'reload']);
 
 
-$router->get('/vendedores', [UserController::class, 'index']);
 
 
 //Temas del login

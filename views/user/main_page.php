@@ -16,7 +16,7 @@
     </title>
 </head>
 <body>
-    <main >
+    <main>
         <section class="nav">
             <button class="home-button" id="home-button"><img src="./../../src/img/botonMancuerna.png" alt=""></button>
             <div class="user">

@@ -64,6 +64,30 @@ input{
     margin: .3rem 0 .3rem 0;
     height: 3.5rem;
 }
+#password--div{
+    height: 3rem;
+    background-color: #FFF;
+    border:solid  #FFF 0.2rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+    padding: 0;
+}
+#password--div img{
+    width: 3rem;
+    height:3rem;
+}
+#password{
+    text-align: start;
+    color: black;
+    font-size: 1.8rem;
+    border: none;
+    padding-right: 4rem;
+    padding-left: 4rem;
+   
+}
 .submit--button{
     margin: 2rem 0 2rem 0;
     height: 4rem;

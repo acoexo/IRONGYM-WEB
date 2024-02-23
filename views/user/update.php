@@ -1,3 +1,6 @@
+<?php 
+$_SESSION['userid']=$usrData['id']
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>

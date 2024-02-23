@@ -1,0 +1,33 @@
+DROP DATABASE IF EXISTS irondb;
+CREATE DATABASE irondb;
+USE irondb;
+
+CREATE TABLE users (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(40) NOT NULL,
+  `date` DATE NOT NULL,
+  `gen` CHAR(1) NOT NULL,
+  `tfn` INT NOT NULL,
+  `img` blob NULL,
+  `username` VARCHAR(40) NOT NULL,
+  `email` VARCHAR(40) NOT NULL,
+  `password` VARCHAR(60) NOT NULL,
+  `admin` bool not null,
+  `strikes` int,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB;
+CREATE TABLE stadistics (
+  `userid` INT NOT NULL, 
+  `age` INT NOT NULL,
+  `weight` INT NOT NULL,
+  `height` INT NOT NULL,
+  `activity_factor` INT,
+  PRIMARY KEY (`userid`),
+  CONSTRAINT `fk_userid` FOREIGN KEY (`userid`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB;
+DROP USER IF EXISTS 'iron_user'@'%';
+CREATE USER 'iron_user'@'%' IDENTIFIED BY '1357';
+GRANT SELECT, INSERT, UPDATE, DELETE ON irondb.* TO 'iron_user'@'%' WITH GRANT OPTION;
+ALTER USER 'iron_user'@'%' PASSWORD EXPIRE NEVER;
+select * from users;
+select * from stadistics;

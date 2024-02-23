@@ -5,8 +5,21 @@ use MVC\Router;
 use Model\User;
 use Controllers\PageController;
 class UserController {
-    public static function updateStats(){
+    public static function update(){
         session_start();
+        if(isset($_SESSION['username'])){
+            $auth = new User($_SESSION['username']);
+            $deleted = $auth->update($_POST, $_SESSION['userid']);
+            if($deleted){
+                echo "Usuario actualizado exitosamente.";
+            } else {
+                echo "Error al actualizar el usuario.";
+            }
+        } else {
+             echo "No tienes permiso para eliminar usuarios.";
+        }
+            
+
     }
     public static function delete(){
         session_start();
