@@ -14,7 +14,6 @@ class LoginController {
             } else {
                 if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'POST')  {
                     $auth = new User($_POST);
-                    var_dump($auth);
                     $usnm = $auth->getusnm();
                     $errores = $auth->validar();
                     if (empty($errores)) {
@@ -22,11 +21,6 @@ class LoginController {
                         if (!$resultado) {
                             $errores = User::getErrores();
                         } else {
-                            $logMessage = "Not an error: ";
-                            foreach ($resultado as $row) {
-                                $logMessage .= $row . " ";
-                            }
-                            error_log($logMessage . "\n", 3, './../errorLog/error.log'); 
                             $autenticado = $auth->comprobarPassword($resultado);
                             if ($autenticado) {
                                 $_SESSION['username'] = $usnm;

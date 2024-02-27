@@ -11,7 +11,7 @@ class UserController {
             $auth = new User($_SESSION['username']);
             $deleted = $auth->update($_POST, $_SESSION['userid']);
             if($deleted){
-                echo "Usuario actualizado exitosamente.";
+                header("Location: /user/mainpage");
             } else {
                 echo "Error al actualizar el usuario.";
             }

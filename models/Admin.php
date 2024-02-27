@@ -4,7 +4,6 @@ namespace Model;
 
 class Admin extends ActiveRecord {
     //Base de datos
-
     protected static $tabla = 'usuarios';
     protected static $columnasDB = ['id', 'email', 'password', 'admin'];
     
@@ -17,6 +16,9 @@ class Admin extends ActiveRecord {
         $this->id = $args['id'] ?? null;
         $this->email = $args['email'] ?? '';
         $this->password = $args['password'] ?? '';
+    }
+    public static function setDB($database) {
+        self::$db = $database;
     }
 
     public function validar() {
@@ -56,5 +58,30 @@ class Admin extends ActiveRecord {
         $_SESSION['admin'] = $this->email;
         $_SESSION['login'] = true;
         header('Location: /admin');
+    }
+    public function load(){
+        $sql = "SELECT id, username FROM users LIMIT 10";
+        $result = self::$db->query($sql);
+        if ($result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
+                $users[] = $row;
+            }
+        }
+        header('Content-Type: application/json');
+        return json_encode($users);
+    }
+    public function search($search){
+        $sql = "SELECT id, username FROM users WHERE username LIKE '%$search%' LIMIT 10";
+        $result = self::$db->query($sql);
+        if ($result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
+                $users[] = $row;
+            }
+        }
+        return $users;
+    }
+    public function printUsers($users){
+        header('Content-Type: application/json');
+        return json_encode($users);
     }
 }

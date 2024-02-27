@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,6 +9,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./../../src/css/normalize.css">
     <link rel="stylesheet" href="./../../src/css/main_page.css">
+
+    <script src="https://code.jquery.com/jquery-3.6.3.min.js"></script>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <meta charset="UTF-8">
@@ -51,43 +55,29 @@
 
 
         <section class="tabla_usuarios">
-            <?php
-            // Consulta SQL para buscar usuarios por nombre
-            if (isset($_GET['q'])) {
-                $search = $_GET['q'];
-                $sql = "SELECT * FROM users WHERE username LIKE '%$search%' LIMIT 10";
-                $result = $conn->query($sql);
-
-            // Array para almacenar los resultados
-            $users = array();
-
-            if ($result->num_rows > 0) {
-                    while ($row = $result->fetch_assoc()) {
-                        $users[] = $row;
-                    }
-                }
-
-            // Devolver resultados como JSON
-            header('Content-Type: application/json');
-            echo json_encode($users);
-            }
-
-            // Cerrar conexión a la base de datos
-            ?>
 
             <table id=results>
-            <h1>Tabla de Usuarios</h1>
+                <h1>Tabla de Usuarios</h1>
                 <input type="text" id="search" placeholder="Buscar por nombre de usuario">
                 <table id="userTable" border="1">
                     <thead>
                         <tr>
                             <th>ID</th>
                             <th>Nombre de Usuario</th>
-                            <th>Acción</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
             </table>
+            <?php
+            // Consulta SQL para buscar usuarios por nombre
+            if (isset($_GET['q'])) {
+                $search = $_GET['q'];
+                $admin->printUsers($search);
+                
+            }
+
+            // Cerrar conexión a la base de datos
+            ?>
         </section>
 
             <section class="user_properties">
@@ -99,11 +89,9 @@
                 </div>
             </section>
 
-
-
     </main>
-    <script src="./../../public/src/JS/admin.js"></script>
-    <script src="./../../public/src/JS/menu_main.js"></script>
+    <script src="./../../src/JS/admin.js"></script>
+    <script src="./../../src/JS/menu_main.js"></script>
 </body>
 
 </html>
