@@ -1,8 +1,4 @@
-<?php
-if (session_status() == PHP_SESSION_NONE) {
-    session_start();
-}
-?>
+<?php if (session_status() == PHP_SESSION_NONE) {session_start();}?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -32,19 +28,10 @@ if (session_status() == PHP_SESSION_NONE) {
                     <input type="submit" class="submit--button">
                     <a href="/signup" class="signup--button">SIGNUP</a>
                 </div>
-                
             </form>
         </div>
         <div class="errores">
-            <?php
-               if (!empty($errores)) {
-                echo '<ul style="color: #fff;">';
-                foreach ($errores as $error) {
-                    echo '<li>' . $error . '</li>';
-                }
-                echo '</ul>';
-                }
-            ?>
+            <?php if (!empty($errores)) {echo '<ul style="color: #fff;">';foreach ($errores as $error) {echo '<li>' . $error . '</li>';}echo '</ul>';}?>
         </div>
     </main>
     <script src="./../../src/JS/js.js"></script>

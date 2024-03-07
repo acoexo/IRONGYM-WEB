@@ -2,27 +2,57 @@
 
 namespace Model;
 
-class ActiveRecord {
+/**
+ * Clase ActiveRecord
+ * 
+ * Proporciona métodos para interactuar con la base de datos de manera genérica.
+ */
+class ActiveRecord
+{
     protected static $db;
     protected static $tabla = '';
     protected static $columnasDB = [];
     protected static $errores = [];
-    
-    public static function setDB($database) {
+
+    /**
+     * Establece la conexión a la base de datos
+     *
+     * @param PDO $database Instancia de PDO que representa la conexión a la base de datos
+     * @return void
+     */
+    public static function setDB($database)
+    {
         self::$db = $database;
     }
 
-    public static function getErrores() {
+    /**
+     * Obtiene los errores ocurridos durante la validación
+     *
+     * @return array Array que contiene los errores de validación
+     */
+    public static function getErrores()
+    {
         return static::$errores;
     }
 
-    public function validar() {
+    /**
+     * Valida los datos del modelo
+     *
+     * @return array Array vacío si no hay errores de validación
+     */
+    public function validar()
+    {
         static::$errores = [];
         return static::$errores;
     }
 
-    // Método para obtener todos los registros
-    public static function all() {
+    /**
+     * Obtiene todos los registros de la tabla
+     *
+     * @return array|bool Array de registros si la consulta tiene éxito, false si falla
+     */
+    public static function all()
+    {
         try {
             $query = "SELECT * FROM " . static::$tabla;
             $resultado = self::consultarSQL($query);
@@ -33,8 +63,14 @@ class ActiveRecord {
         }
     }
 
-    // Método para encontrar un registro por su ID
-    public static function find($id) {
+    /**
+     * Encuentra un registro por su ID
+     *
+     * @param int $id ID del registro a buscar
+     * @return array|bool Array que representa el registro si se encuentra, false si no se encuentra o falla la consulta
+     */
+    public static function find($id)
+    {
         try {
             $query = "SELECT * FROM " . static::$tabla . " WHERE id = ?";
             $params = [$id];
@@ -46,8 +82,14 @@ class ActiveRecord {
         }
     }
 
-    // Método para obtener registros opcionales por ID
-    public static function get($id = null) {
+    /**
+     * Obtiene registros opcionales por ID
+     *
+     * @param int|null $id ID opcional del registro a obtener
+     * @return array|bool Array de registros si la consulta tiene éxito, false si falla
+     */
+    public static function get($id = null)
+    {
         try {
             $query = "SELECT * FROM " . static::$tabla;
             if ($id !== null) {
@@ -63,8 +105,15 @@ class ActiveRecord {
         }
     }
 
-    // Método para realizar consultas SQL preparadas
-    public static function consultarSQL($query, $params = []) {
+    /**
+     * Realiza consultas SQL preparadas
+     *
+     * @param string $query Consulta SQL
+     * @param array $params Parámetros para la consulta preparada
+     * @return array|bool Array de resultados si la consulta tiene éxito, false si falla
+     */
+    public static function consultarSQL($query, $params = [])
+    {
         try {
             $resultado = self::$db->prepare($query);
             $resultado->execute($params);
@@ -75,8 +124,14 @@ class ActiveRecord {
         }
     }
 
-    // Método para crear un objeto a partir de un registro de la base de datos
-    protected static function crearObjeto($registro) {
+    /**
+     * Crea un objeto a partir de un registro de la base de datos
+     *
+     * @param array $registro Registro de la base de datos
+     * @return mixed|bool Objeto creado si tiene éxito, false si falla
+     */
+    protected static function crearObjeto($registro)
+    {
         try {
             $objeto = new static;
             foreach ($registro as $key => $value) {
@@ -91,8 +146,13 @@ class ActiveRecord {
         }
     }
 
-    // Método para obtener los atributos del objeto
-    public function atributos() {
+    /**
+     * Obtiene los atributos del objeto
+     *
+     * @return array|bool Array de atributos si tiene éxito, false si falla
+     */
+    public function atributos()
+    {
         try {
             $atributos = [];
             foreach (static::$columnasDB as $columna) {
@@ -106,8 +166,13 @@ class ActiveRecord {
         }
     }
 
-    // Método para sanitizar los atributos del objeto
-    public function sanitizarAtributos() {
+    /**
+     * Sanitiza los atributos del objeto
+     *
+     * @return array|bool Array de atributos sanitizados si tiene éxito, false si falla
+     */
+    public function sanitizarAtributos()
+    {
         try {
             $atributos = $this->atributos();
             $sanitizado = [];
@@ -120,10 +185,16 @@ class ActiveRecord {
             return false;
         }
     }
-    
 
-    // Método para sincronizar los atributos del objeto
-    public function sincronizar($args = []) {
+
+    /**
+     * Sincroniza los atributos del objeto
+     *
+     * @param array $args Argumentos para sincronizar
+     * @return void
+     */
+    public function sincronizar($args = [])
+    {
         try {
             foreach ($args as $key => $value) {
                 if (property_exists($this, $key) && !is_null($value)) {
@@ -135,21 +206,4 @@ class ActiveRecord {
             return false;
         }
     }
-    // public function setImagen($imagen) {
-    //     if (!is_null($this->id)) {
-    //         $this->borrarImagen();
-    //     }
-
-    //     if ($imagen) {
-    //         $this->imagen = $imagen;
-    //     }
-    // }
-
-    // public function borrarImagen() {
-    //     $rutaImagen = CARPETA_IMAGENES . $this->imagen;
-
-    //     if (file_exists($rutaImagen)) {
-    //         unlink($rutaImagen);
-    //     }
-    // }
 }

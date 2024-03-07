@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <link rel="shortcut icon" href="./../../src/SVG/mancuerna_roja.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -15,14 +16,15 @@
         <?php echo $usrData['username'] ?>
     </title>
 </head>
+
 <body>
     <main>
         <section class="nav">
             <button class="home-button" id="home-button"><img src="./../../src/img/botonMancuerna.png" alt=""></button>
             <div class="user">
                 <h2 id="user-name">
-                    <?php  echo $usrData['username'] ?>
-                    
+                    <?php echo $usrData['username'] ?>
+
                 </h2>
                 <button id="user-button" class="user-button"><i class="bi bi-person"></i></button>
             </div>
@@ -32,7 +34,7 @@
         <section class="menu" id="menu">
             <div class="options-menu" id="options_menu">
                 <h2 id="user-name">
-                    <?php  echo $usrData['username'] ?>
+                    <?php echo $usrData['username'] ?>
                 </h2>
                 <button class="cerrar-menu" id="cerrar"><i class="bi bi-x-lg"></i></button>
                 <div class="links">
@@ -43,7 +45,7 @@
                     </br>
                     <a class="link" href="#Contactos">CONTACT</a>
                     </br>
-                    <a href="update"class="update" id="update">UPDATE STATS</a>
+                    <a href="update" class="update" id="update">UPDATE STATS</a>
                 </div>
             </div>
         </section>

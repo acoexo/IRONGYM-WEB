@@ -1,65 +1,105 @@
-<?php 
+<?php
 
 namespace Model;
 
-class Admin extends ActiveRecord {
-    //Base de datos
+/**
+ * Clase Admin
+ * 
+ * Representa un administrador en la aplicación.
+ */
+class Admin extends ActiveRecord
+{
+    // Base de datos
     protected static $tabla = 'usuarios';
     protected static $columnasDB = ['id', 'email', 'password', 'admin'];
-    
+
     public $id;
     public $email;
     public $password;
 
+    /**
+     * Constructor de la clase Admin
+     *
+     * @param array $args Argumentos para inicializar el administrador
+     */
     public function __construct($args = [])
     {
         $this->id = $args['id'] ?? null;
         $this->email = $args['email'] ?? '';
         $this->password = $args['password'] ?? '';
     }
-    public static function setDB($database) {
-        self::$db = $database;
-    }
 
-    public function validar() {
-        if(!$this->email) {
-            self::$errores[] = 'El email es obligatorio';   
+    /**
+     * Valida los datos del administrador
+     *
+     * @return array Array de errores de validación
+     */
+    public function validar()
+    {
+        if (!$this->email) {
+            self::$errores[] = 'El email es obligatorio';
         }
-        if(!$this->password) {
-            self::$errores[] = 'El password es obligatorio';              
+        if (!$this->password) {
+            self::$errores[] = 'El password es obligatorio';
         }
         return self::$errores;
     }
 
-    public function existeUsuario() {
+    /**
+     * Verifica si el usuario existe en la base de datos
+     *
+     * @return mixed|null Objeto con los datos del usuario si existe, null si no existe
+     */
+    public function existeUsuario()
+    {
         $query = "SELECT * FROM " . self::$tabla . " WHERE email = " . "'" . $this->email . "'" . " LIMIT 1";
         $resultado = self::$db->query($query);
-        if(!$resultado->num_rows) {
+        if (!$resultado->num_rows) {
             self::$errores[] = 'El usuario no existe';
-            return;
+            return null;
         }
         return $resultado;
     }
 
-    public function comprobarPassword($resultado) {
+    /**
+     * Verifica si el password proporcionado es correcto
+     *
+     * @param mixed $resultado Resultado de la consulta SQL
+     * @return bool True si el password es correcto, False si no lo es
+     */
+    public function comprobarPassword($resultado)
+    {
         $usuario = $resultado->fetch_object();
 
         $autenticado = password_verify($this->password, $usuario->password);
-        
-        if(!$autenticado) {
+
+        if (!$autenticado) {
             self::$errores[] = 'Verifique los datos suministrados';
         }
-        
+
         return $autenticado;
     }
 
-    public function autenticar() {
+    /**
+     * Inicia sesión para el administrador
+     *
+     * @return void
+     */
+    public function autenticar()
+    {
         session_start();
         $_SESSION['admin'] = $this->email;
         $_SESSION['login'] = true;
         header('Location: /admin');
     }
-    public function load(){
+
+    /**
+     * Carga los usuarios desde la base de datos
+     *
+     * @return mixed JSON con los datos de los usuarios
+     */
+    public function load()
+    {
         $sql = "SELECT id, username FROM users LIMIT 10";
         $result = self::$db->query($sql);
         if ($result->num_rows > 0) {
@@ -70,7 +110,15 @@ class Admin extends ActiveRecord {
         header('Content-Type: application/json');
         return json_encode($users);
     }
-    public function search($search){
+
+    /**
+     * Busca usuarios en la base de datos
+     *
+     * @param string $search Término de búsqueda
+     * @return array Array con los datos de los usuarios encontrados
+     */
+    public function search($search)
+    {
         $sql = "SELECT id, username FROM users WHERE username LIKE '%$search%' LIMIT 10";
         $result = self::$db->query($sql);
         if ($result->num_rows > 0) {
@@ -80,7 +128,15 @@ class Admin extends ActiveRecord {
         }
         return $users;
     }
-    public function printUsers($users){
+
+    /**
+     * Imprime los usuarios en formato JSON
+     *
+     * @param array $users Array con los datos de los usuarios
+     * @return mixed JSON con los datos de los usuarios
+     */
+    public function printUsers($users)
+    {
         header('Content-Type: application/json');
         return json_encode($users);
     }

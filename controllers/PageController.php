@@ -6,69 +6,168 @@ use MVC\Router;
 use Model\Admin;
 use Model\User;
 
-class PageController {
-    public static function index(Router $router) {
+/**
+ * Class PageController
+ * @package Controllers
+ */
+class PageController
+{
+    /**
+     * Renders the index page
+     *
+     * @param Router $router The router instance
+     * @return void
+     */
+    public static function index(Router $router)
+    {
         $router->render('/paginas/index');
     }
-    public static function example(Router $router) {
+
+    /**
+     * Renders the example page
+     *
+     * @param Router $router The router instance
+     * @return void
+     */
+    public static function example(Router $router)
+    {
         $router->render('/example/insertUser');
     }
-    public static function nosotros(Router $router) {
-        $router->render('paginas/nosotros', [
-        ]);
+
+    /**
+     * Renders the nosotros page
+     *
+     * @param Router $router The router instance
+     * @return void
+     */
+    public static function nosotros(Router $router)
+    {
+        $router->render('paginas/nosotros', []);
     }
-    public static function blog(Router $router) {
+
+    /**
+     * Renders the blog page
+     *
+     * @param Router $router The router instance
+     * @return void
+     */
+    public static function blog(Router $router)
+    {
         $router->render('paginas/blog');
     }
-    public static function entrada(Router $router) {
+
+    /**
+     * Renders the entrada page
+     *
+     * @param Router $router The router instance
+     * @return void
+     */
+    public static function entrada(Router $router)
+    {
         $router->render('paginas/entrada');
     }
-    public static function mainPageLoader(Router $router){
+
+    /**
+     * Loads the main page for the user
+     *
+     * @param Router $router The router instance
+     * @return void
+     */
+    public static function mainPageLoader(Router $router)
+    {
         session_start();
         $usr = $_SESSION['username'];
         $usrData = User::loadUserData($usr);
         $usrStats = User::loadStatisticData($usrData['id']);
         $router->render('user/main_page', [
-            'user'=>$usr,
-            'usrData'=>$usrData,
-            'usrStats'=>$usrStats
+            'user' => $usr,
+            'usrData' => $usrData,
+            'usrStats' => $usrStats
         ]);
     }
-    public static function adminlogin(Router $router){
+
+    /**
+     * Renders the admin login page
+     *
+     * @param Router $router The router instance
+     * @return void
+     */
+    public static function adminlogin(Router $router)
+    {
         $router->render('auth/adminlogin');
     }
-    public static function delteUser(Router $router){
+
+    /**
+     * Renders the delete user page
+     *
+     * @param Router $router The router instance
+     * @return void
+     */
+    public static function delteUser(Router $router)
+    {
         session_start();
         $usr = $_SESSION['username'];
         $usrData = User::loadUserData($usr);
         $usrStats = User::loadStatisticData($usrData['id']);
-        $router->render('user/delete' , [
-            'user'=>$usr,
-            'usrData'=>$usrData,
-            'usrStats'=>$usrStats
+        $router->render('user/delete', [
+            'user' => $usr,
+            'usrData' => $usrData,
+            'usrStats' => $usrStats
         ]);
     }
-    public static function updateUser(Router $router){
+
+    /**
+     * Renders the update user page
+     *
+     * @param Router $router The router instance
+     * @return void
+     */
+    public static function updateUser(Router $router)
+    {
         session_start();
         $usr = $_SESSION['username'];
         $usrData = User::loadUserData($usr);
         $usrStats = User::loadStatisticData($usrData['id']);
-        $router->render('user/update' , [
-            'user'=>$usr,
-            'usrData'=>$usrData,
-            'usrStats'=>$usrStats
+        $router->render('user/update', [
+            'user' => $usr,
+            'usrData' => $usrData,
+            'usrStats' => $usrStats
         ]);
     }
-    public static function adminpage(Router $router){
+
+    /**
+     * Renders the admin main page
+     *
+     * @param Router $router The router instance
+     * @return void
+     */
+    public static function adminpage(Router $router)
+    {
         // $admin = Admin::get();
         $router->render('admin/adminmainpage'/*, [
             // 'admin' => $admin
         ]*/);
     }
-    public static function createUser(Router $router){
+
+    /**
+     * Renders the create user page
+     *
+     * @param Router $router The router instance
+     * @return void
+     */
+    public static function createUser(Router $router)
+    {
         $router->render('auth/signup');
     }
-    public static function reload(Router $router){
+
+    /**
+     * Reloads the index page after destroying the session
+     *
+     * @param Router $router The router instance
+     * @return void
+     */
+    public static function reload(Router $router)
+    {
         session_start();
         session_destroy();
         $router->render('/paginas/index');

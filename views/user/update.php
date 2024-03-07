@@ -1,10 +1,11 @@
-<?php 
-$_SESSION['userid']=$usrData['id']
+<?php
+$_SESSION['userid'] = $usrData['id']
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<link rel="shortcut icon" href="./../../src/SVG/mancuerna_roja.svg" >
+    <link rel="shortcut icon" href="./../../src/SVG/mancuerna_roja.svg">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IRON SIGNUP</title>
@@ -14,6 +15,7 @@ $_SESSION['userid']=$usrData['id']
     <link rel="stylesheet" href="./../../src/css/normalize.css">
     <link rel="stylesheet" href="./../../src/css/signupcss.css">
 </head>
+
 <body>
     <section class="signup_container">
         <img src="./../../src/img/iron_stats.png" alt="IronStatsPNG" width="252" height="94">
@@ -35,15 +37,16 @@ $_SESSION['userid']=$usrData['id']
         </form>
     </section>
     <section class="errores">
-        <?php 
-            if(!empty($errores)){
-                echo '<ul>';
-                foreach($errores as $error){
-                    echo "<li>".($error)."</li>";
-                }
-                echo '</ul>';
+        <?php
+        if (!empty($errores)) {
+            echo '<ul>';
+            foreach ($errores as $error) {
+                echo "<li>" . ($error) . "</li>";
             }
+            echo '</ul>';
+        }
         ?>
     </section>
 </body>
+
 </html>

@@ -1,4 +1,4 @@
-<?php 
+<?php
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../includes/app.php';
 
@@ -23,7 +23,7 @@ $router->get('/reload', [PageController::class, 'reload']);
 
 
 
-//Temas del login
+//Login and signup
 $router->get('/login', [LoginController::class, 'login']);
 $router->post('/login', [LoginController::class, 'login']);
 $router->get('/signup', [LoginController::class, 'signup']);
