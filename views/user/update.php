@@ -23,7 +23,7 @@ $_SESSION['userid'] = $usrData['id']
             <label for="">Los campos en blanco no se actualizarán</label>
             <input class="box" type="number" name="height" placeholder="Altura (cm)" id="height" value="<?php echo isset($userStats['height']) ? $userStats['height'] : ''; ?>">
             <input class="box" type="number" name="weight" placeholder="Peso (kg)" id="weight" value="<?php echo isset($userStats['weight']) ? $userStats['weight'] : ''; ?>">
-            <select class="select--ph" name="actividadFisica" id="actividadFisica">
+            <select class="select--ph" name="activity_factor" id="activity_factor">
                 <option value="0">ACTIVITY FACTOR</option>
                 <option value="1">LITTLE OR NONE</option>
                 <option value="2">LIGHT (1-3 DAYS/WEEK)</option>

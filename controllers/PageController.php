@@ -4,6 +4,7 @@ namespace Controllers;
 
 use MVC\Router;
 use Model\Admin;
+use Model\Statistic;
 use Model\User;
 
 /**
@@ -78,7 +79,7 @@ class PageController
         session_start();
         $usr = $_SESSION['username'];
         $usrData = User::loadUserData($usr);
-        $usrStats = User::loadStatisticData($usrData['id']);
+        $usrStats = Statistic::loadStatisticData($usrData['id']);
         $router->render('user/main_page', [
             'user' => $usr,
             'usrData' => $usrData,
@@ -108,7 +109,7 @@ class PageController
         session_start();
         $usr = $_SESSION['username'];
         $usrData = User::loadUserData($usr);
-        $usrStats = User::loadStatisticData($usrData['id']);
+        $usrStats = Statistic::loadStatisticData($usrData['id']);
         $router->render('user/delete', [
             'user' => $usr,
             'usrData' => $usrData,
@@ -127,7 +128,7 @@ class PageController
         session_start();
         $usr = $_SESSION['username'];
         $usrData = User::loadUserData($usr);
-        $usrStats = User::loadStatisticData($usrData['id']);
+        $usrStats = Statistic::loadStatisticData($usrData['id']);
         $router->render('user/update', [
             'user' => $usr,
             'usrData' => $usrData,

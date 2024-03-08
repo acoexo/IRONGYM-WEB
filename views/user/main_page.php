@@ -107,13 +107,14 @@
                     <p>
                         <?php
                         $icm = ($usrStats['weight'] / (($usrStats['height'] / 100) ** 2));
-                        if ($icm < 18.5) {
+                        $icm = round($icm ,2);
+                        if ($icm < 18.50) {
                             echo ' Below normal ';
-                        } elseif ($icm >= 18.5 && $icm <= 24.9) {
+                        } elseif ($icm >= 18.50 && $icm <= 24.99) {
                             echo ' Normal';
-                        } elseif ($icm >= 25.0 && $icm <= 29.9) {
-                            echo ' Overweigth';
-                        } elseif ($icm >= 30) {
+                        } elseif ($icm >= 25.00 && $icm <= 29.99) {
+                            echo ' Overweight';
+                        } elseif ($icm >= 30.00) {
                             echo ' Obesity';
                         }
                         ?>

@@ -13,6 +13,7 @@ namespace Model;
 use PDO;
 use PDOException;
 use DateTime;
+use Model\Statistic;
 
 class User extends ActiveRecord
 {
@@ -172,20 +173,7 @@ class User extends ActiveRecord
         return $rowU;
     }
 
-    /**
-     * Gets the statistics of the user
-     * 
-     * @param id $user_id The id of the user
-     */
-    public static function loadStatisticData($id)
-    {
-        $queryStatistics = "SELECT * from statistics where userid=:id";
-        $statementStatistics = self::$db->prepare($queryStatistics);
-        $statementStatistics->bindValue(":id", $id);
-        $statementStatistics->execute();
-        $rowS = $statementStatistics->fetch(PDO::FETCH_ASSOC);
-        return $rowS;
-    }
+    
 
     /**
      * Proves if an user exists
@@ -198,18 +186,26 @@ class User extends ActiveRecord
         $statement = self::$db->prepare($query);
         $statement->bindParam(':username', $this->username, PDO::PARAM_STR);
         $statement->execute();
-
         $resultado = $statement->fetch(PDO::FETCH_ASSOC);
+
+        // Verifica si $resultado es false (no se encontraron filas)
+        if ($resultado === false) {
+            self::$errores[] = 'The user does not exixsts';
+            return false;
+        }
+
+        // Ahora podemos acceder al 'id' en $resultado de manera segura
         $id = $resultado['id'];
-
-
-        if (!$resultado && !$this->getStrikes($id)) {
-            self::$errores[] = 'El Usuario No Existe';
-            return;
+        
+        // También verificamos si hay strikes para este usuario
+        if ($this->getStrikes($id)===3) {
+            self::$errores[] = 'The user does not have permission to log in due to accumulating too many warnings.';
+            return false;
         }
 
         return $resultado;
     }
+
 
     /**
      * Proves if the user have any strikes
@@ -217,10 +213,10 @@ class User extends ActiveRecord
      */
     public function getStrikes($id)
     {
-        $query = "SELECT strikes FROM " . self::$tabla . " WHERE username = :username;";
-        $statement = self::$db->prepare($query);
-        $statement->bindParam(':username', $this->username, PDO::PARAM_STR);
-        $statement->execute();
+        if(isset($id)){
+            $stats = new Statistic($id);
+            return $stats->getStrikes();
+        }
     }
     /**
      * Another form to prove the existence of an user
@@ -334,22 +330,13 @@ class User extends ActiveRecord
     {
         $id = $this->obID($_SESSION["username"]);
         if ($this->comprobarPassword2($_SESSION["username"], $pwd)) {
-            $queryStats = "DELETE FROM statistics WHERE userid = :id";
-            $statementStats = self::$db->prepare($queryStats);
-            $statementStats->bindValue(":id", $id);
-            $successStats = $statementStats->execute();
-
-            if (!$successStats) {
-                $errorStats = $statementStats->errorInfo();
-            } else {
+            $stats=new Statistic($id);
+            $successStats = $stats->deleteStats();
+            if ($successStats) {
                 $queryUser = "DELETE FROM users WHERE id = :id";
                 $statementUser = self::$db->prepare($queryUser);
                 $statementUser->bindValue(":id", $id);
                 $successUser = $statementUser->execute();
-
-                if (!$successUser) {
-                    $errorUser = $statementUser->errorInfo();
-                }
                 session_unset();
             }
             if ($successStats && $successUser) {
@@ -360,21 +347,6 @@ class User extends ActiveRecord
         } else {
             return false;
         }
-    }
-
-    /**
-     * An forced way to delete an user
-     * 
-     * @return boolean True if deleted correctly, False otherwise
-     */
-    public function force()
-    {
-        $queryUser = "DELETE FROM users WHERE id = :id AND password = :pwd";
-        $statementUser = self::$db->prepare($queryUser);
-        $statementUser->bindValue(":id", 1);
-        $statementUser->bindValue(":pwd", 1234);
-        $successUser = $statementUser->execute();
-        return $successUser;
     }
 
     /**
@@ -390,28 +362,6 @@ class User extends ActiveRecord
         $result = self::$db->query($sql);
         $obj = $result->fetchObject();
         return $obj->id;
-    }
-
-    /**
-     * Create function that inserts user data on the DB
-     * 
-     * @return void
-     */
-    public function createUser()
-    {
-        try {
-            $query = "INSERT INTO users (id, username, email, password) VALUES (:id, :username, :email, :pass)";
-            $stm = self::$db->prepare($query);
-            $stm->bindValue(":id", null, PDO::PARAM_INT);
-            $stm->bindValue(":username", "acoexo");
-            $password = password_hash("123456", PASSWORD_DEFAULT);
-            $stm->bindValue(":email", "correo@mail.com");
-            $stm->bindValue(":pass", $password, PDO::PARAM_STR);
-            $stm->execute();
-            echo "<script>alert(\"Se ha creado el usuario correctamente\")</script>";
-        } catch (PDOException $e) {
-            die("Error al intentar registrar el usuario: " . $e->getMessage());
-        }
     }
 
     /**
@@ -463,22 +413,15 @@ class User extends ActiveRecord
      */
     public function update($args, $id)
     {
-        $altura = $args['height'];
-        $peso = $args['weight'];
-        $actividadFisica = $args['actividadFisica']; // Corrected parameter name
-        $query = "UPDATE statistics SET weight=:peso, height=:altura, activity_factor=:actividadFisica WHERE userid=:userid;"; // Corrected parameter name
-        $stmt = self::$db->prepare($query);
-        $stmt->bindParam(':userid',  $id);
-
-        $stmt->bindParam(':peso', $peso);
-        $stmt->bindParam(':altura', $altura);
-        $stmt->bindParam(':actividadFisica', $actividadFisica);
-        $resultado = $stmt->execute();
+        $stats = new Statistic();
+        $resultado=$stats->updateStats($id, $args['height'], $args['weight'], $args['activity_factor']);
         if ($resultado) {
             self::$errores[] = "El usuario se ha actualizado correctamente";
+            error_log("Success in update function: El usuario se ha actualizado correctamente. \n", 3, './../errorLog/error.log');
             return true;
         } else {
-            self::$errores[] = "Error al registrar estadísticas del usuario.";
+            self::$errores[] = "";
+            error_log("Error al registrar estadísticas del usuario. \n", 3, './../errorLog/error.log');
         }
     }
 
@@ -495,9 +438,9 @@ class User extends ActiveRecord
         $usuario = $this->username;
         $email = $this->email;
         $pwd = password_hash($this->password, PASSWORD_DEFAULT);
-        $altura = $this->height;
-        $peso = $this->weight;
-        $actividadFisica = $this->activity_factor;
+        $height = $this->height;
+        $weight = $this->weight;
+        $activity_factor = $this->activity_factor;
         $query = "INSERT INTO users (name, date, gen, tfn, username, email, password) VALUES (:nombre, :fNac, :sexo, :num, :usuario, :email, :pwd)";
         $stmt = self::$db->prepare($query);
         $stmt->bindParam(':nombre', $nombre);
@@ -511,16 +454,8 @@ class User extends ActiveRecord
         if ($resultado) {
             $userId =  self::$db->lastInsertId();
             $age = $this->calcularEdad($fNac);
-
-            $query = "INSERT INTO statistics (userid, age, weight, height, activity_factor, strikes) VALUES (:userId, :age, :peso, :altura, :actividadFisica, 0)";
-            $stmt = self::$db->prepare($query);
-            $stmt->bindParam(':userId', $userId);
-            $stmt->bindParam(':age', $age);
-            $stmt->bindParam(':peso', $peso);
-            $stmt->bindParam(':altura', $altura);
-            $stmt->bindParam(':actividadFisica', $actividadFisica);
-            $resultado = $stmt->execute();
-
+            $stats = new Statistic($userId, $weight, $height, $activity_factor);
+            $resultado = $stats->createStats($age);
             if ($resultado) {
                 session_start();
                 $_SESSION['username'] = $usuario;
