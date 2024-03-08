@@ -12,7 +12,7 @@ class ActiveRecord
     protected static $db;
     protected static $tabla = '';
     protected static $columnasDB = [];
-    protected static $errores = [];
+    protected static $errors = [];
 
     /**
      * Establece la conexión a la base de datos
@@ -26,24 +26,24 @@ class ActiveRecord
     }
 
     /**
-     * Obtiene los errores ocurridos durante la validación
+     * Obtiene los errors ocurridos durante la validación
      *
-     * @return array Array que contiene los errores de validación
+     * @return array Array que contiene los errors de validación
      */
-    public static function getErrores()
+    public static function getErrors()
     {
-        return static::$errores;
+        return static::$errors;
     }
 
     /**
      * Valida los datos del modelo
      *
-     * @return array Array vacío si no hay errores de validación
+     * @return array Array vacío si no hay errors de validación
      */
-    public function validar()
+    public function validate()
     {
-        static::$errores = [];
-        return static::$errores;
+        static::$errors = [];
+        return static::$errors;
     }
 
     /**

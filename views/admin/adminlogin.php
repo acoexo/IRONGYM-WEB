@@ -5,7 +5,7 @@
 <link rel="shortcut icon" href="./../../src/SVG/mancuerna_roja.svg" >
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IRON LOGIN</title>
+    <title>ADMIN LOGIN</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;900&display=swap" rel="stylesheet">
@@ -17,7 +17,7 @@
         <div class="mainform">
            <img src="./../../src/img/Icon.png" alt="IRONICON">
             <form id="login" class="login" method="POST">
-                <input type="text" class="username" name="username" id="username" placeholder="Nombre" class="login--name">
+                <input type="text" class="username" name="name" id="name" placeholder="Nombre" class="login--name">
                 <div class="password--div">
                     <input class="password" type="password" name="password" id="password" placeholder="Contraseña"> 
                     <div class="toggle-password-button" onclick="togglePasswordVisibility()">
@@ -26,7 +26,6 @@
                 </div>
                 <div class="nav--buttons">
                     <input type="submit" class="submit--button">
-                    <a href="/signup" class="signup--button">SIGNUP</a>
                 </div>
             </form>
         </div>

@@ -29,7 +29,7 @@ class User extends ActiveRecord
      *
      * @var array
      */
-    protected static $columnasDB = ['id', 'name', 'date', 'gen', 'tfn', 'username', 'email', 'password', 'admin'];
+    protected static $columnasDB = ['id', 'name', 'date', 'gen', 'tfn', 'username', 'email', 'password'];
 
     /**
      * The ID of the user.
@@ -86,13 +86,6 @@ class User extends ActiveRecord
      * @var string
      */
     private $password;
-
-    /**
-     * The admin status of the user.
-     *
-     * @var bool
-     */
-    private $admin;
 
     /**
      * The height of the user.
@@ -190,7 +183,7 @@ class User extends ActiveRecord
 
         // Verifica si $resultado es false (no se encontraron filas)
         if ($resultado === false) {
-            self::$errores[] = 'The user does not exixsts';
+            self::$errors[] = 'The user does not exixsts';
             return false;
         }
 
@@ -199,7 +192,7 @@ class User extends ActiveRecord
         
         // También verificamos si hay strikes para este usuario
         if ($this->getStrikes($id)===3) {
-            self::$errores[] = 'The user does not have permission to log in due to accumulating too many warnings.';
+            self::$errors[] = 'The user does not have permission to log in due to accumulating too many warnings.';
             return false;
         }
 
@@ -243,31 +236,15 @@ class User extends ActiveRecord
      * 
      * @return array|null true if all fields are filled correctly, false otherwise
      */
-    public function validar()
+    public function validate()
     {
         if (!$this->username) {
-            self::$errores[] = 'El nombre de usuario es obligatorio';
+            self::$errors[] = 'El nombre de usuario es obligatorio';
         }
         if (!$this->password) {
-            self::$errores[] = 'El password es obligatorio';
+            self::$errors[] = 'El password es obligatorio';
         }
-        return self::$errores;
-    }
-
-    /**
-     * Proves if the user has admin options
-     * 
-     * @param String $usnm The username of the user that we want to check
-     * 
-     * @return Boolean True if the user has admin options, false otherwise
-     */
-    public function isAdmin($usnm)
-    {
-        $adminQuery = "SELECT admin FROM users WHERE username=:usnm";
-        $statementUsers = self::$db->prepare($adminQuery);
-        $statementUsers->bindParam(':usnm', $usnm, PDO::PARAM_STR);
-        $statementUsers->execute();
-        return $statementUsers->fetchColumn();
+        return self::$errors;
     }
 
     /**
@@ -282,7 +259,7 @@ class User extends ActiveRecord
         $usuario = $resultado;
         $autenticado = password_verify($this->password, $usuario['password']);
         if (!$autenticado) {
-            self::$errores[] = 'Verifique los datos suministrados';
+            self::$errors[] = 'Verifique los datos suministrados';
         }
         return $autenticado;
     }
@@ -304,7 +281,7 @@ class User extends ActiveRecord
         $user = $statement->fetch(PDO::FETCH_ASSOC);
         $autenticado = password_verify($pwd, $user['password']);
         if (!$autenticado) {
-            self::$errores[] = 'Verifique los datos suministrados';
+            self::$errors[] = 'Verifique los datos suministrados';
         }
         return $autenticado;
     }
@@ -372,8 +349,8 @@ class User extends ActiveRecord
     public static function insertExampleUser()
     {
         try {
-            $query = "INSERT INTO users (name, date, gen, tfn, img, username, email, password, admin) 
-            VALUES ('Acoexo', '2004-10-18', 'H', 123456789, NULL, 'acoexo', 'johndoe@example.com', :pass, true);";
+            $query = "INSERT INTO users (name, date, gen, tfn, img, username, email, password) 
+            VALUES ('Acoexo', '2004-10-18', 'H', 123456789, NULL, 'acoexo', 'johndoe@example.com', :pass);";
             $stm = self::$db->prepare($query);
             $password = password_hash("123456", PASSWORD_DEFAULT);
             $stm->bindValue(":pass", $password, PDO::PARAM_STR);
@@ -416,11 +393,11 @@ class User extends ActiveRecord
         $stats = new Statistic();
         $resultado=$stats->updateStats($id, $args['height'], $args['weight'], $args['activity_factor']);
         if ($resultado) {
-            self::$errores[] = "El usuario se ha actualizado correctamente";
+            self::$errors[] = "El usuario se ha actualizado correctamente";
             error_log("Success in update function: El usuario se ha actualizado correctamente. \n", 3, './../errorLog/error.log');
             return true;
         } else {
-            self::$errores[] = "";
+            self::$errors[] = "";
             error_log("Error al registrar estadísticas del usuario. \n", 3, './../errorLog/error.log');
         }
     }
@@ -459,13 +436,13 @@ class User extends ActiveRecord
             if ($resultado) {
                 session_start();
                 $_SESSION['username'] = $usuario;
-                self::$errores[] = "El usuario se ha creado correctamente";
+                self::$errors[] = "El usuario se ha creado correctamente";
                 return true;
             } else {
-                self::$errores[] = "Error al registrar estadísticas del usuario.";
+                self::$errors[] = "Error al registrar estadísticas del usuario.";
             }
         } else {
-            self::$errores[] = "Error al registrar el usuario.";
+            self::$errors[] = "Error al registrar el usuario.";
         }
         return false;
     }

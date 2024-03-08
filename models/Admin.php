@@ -1,91 +1,99 @@
 <?php
 
 namespace Model;
+use PDO;
 
 /**
- * Clase Admin
+ * Class Admin
  * 
- * Representa un administrador en la aplicación.
+ * Represents an administrator in the application.
  */
 class Admin extends ActiveRecord
 {
-    // Base de datos
-    protected static $tabla = 'usuarios';
-    protected static $columnasDB = ['id', 'email', 'password', 'admin'];
+    // Database
+    protected static $table = 'admin';
+    protected static $columnsDB = ['id','name', 'email', 'password'];
 
-    public $id;
-    public $email;
-    public $password;
+    private $id;
+    private $name;
+    private $email;
+    private $password;
+    protected static $errors = [];
 
     /**
-     * Constructor de la clase Admin
-     *
-     * @param array $args Argumentos para inicializar el administrador
+     * Constructor of the Admin class
+     * 
+     * @param array $args Arguments for the initialization of the Admin
      */
     public function __construct($args = [])
     {
         $this->id = $args['id'] ?? null;
+        $this->name = $args['name'] ?? null;
         $this->email = $args['email'] ?? '';
         $this->password = $args['password'] ?? '';
     }
 
     /**
-     * Valida los datos del administrador
+     * Validate the Admin data
      *
-     * @return array Array de errores de validación
+     * @return array Array with the error messages
      */
-    public function validar()
+    public function validate()
     {
-        if (!$this->email) {
-            self::$errores[] = 'El email es obligatorio';
+        if (!$this->name) {
+            self::$errors[] = 'The name is required';
         }
         if (!$this->password) {
-            self::$errores[] = 'El password es obligatorio';
+            self::$errors[] = 'The password is required';
         }
-        return self::$errores;
+        return self::$errors;
     }
 
     /**
-     * Verifica si el usuario existe en la base de datos
+     * Verify the existence of the Admin in the table
      *
-     * @return mixed|null Objeto con los datos del usuario si existe, null si no existe
+     * @return mixed|null Object with the Admin if exists, null otherwise
      */
-    public function existeUsuario()
+    public function adminExists()
     {
-        $query = "SELECT * FROM " . self::$tabla . " WHERE email = " . "'" . $this->email . "'" . " LIMIT 1";
-        $resultado = self::$db->query($query);
-        if (!$resultado->num_rows) {
-            self::$errores[] = 'El usuario no existe';
-            return null;
+        $query = "SELECT * FROM " . self::$table . " WHERE name = " . "'" . $this->name . "'" . " LIMIT 1";
+        $statement = self::$db->query($query);
+        $statement->execute();
+        $result = $statement->fetch(PDO::FETCH_ASSOC);
+        if ($result === false) {
+            self::$errors[] = 'The admin does not exists';
+            return false;
         }
-        return $resultado;
+        $id = $result['id'];
+        return $result;
+
     }
 
     /**
-     * Verifica si el password proporcionado es correcto
+     * Verify the password is correct
      *
-     * @param mixed $resultado Resultado de la consulta SQL
-     * @return bool True si el password es correcto, False si no lo es
+     * @param mixed $result SQL query result
+     * @return bool True if the password is correct, False otherwise
      */
-    public function comprobarPassword($resultado)
+    public function checkPassword($result)
     {
-        $usuario = $resultado->fetch_object();
 
-        $autenticado = password_verify($this->password, $usuario->password);
+        $authenticated = password_verify($this->password, $result['password']);
 
-        if (!$autenticado) {
-            self::$errores[] = 'Verifique los datos suministrados';
+        if (!$authenticated) {
+            self::$errors[] = 'Verify the provided data';
         }
 
-        return $autenticado;
+        return $authenticated;
+        
     }
 
     /**
-     * Inicia sesión para el administrador
+     * Start session for the administrator
      *
      * @return void
      */
-    public function autenticar()
+    public function authenticate()
     {
         session_start();
         $_SESSION['admin'] = $this->email;
@@ -94,50 +102,98 @@ class Admin extends ActiveRecord
     }
 
     /**
-     * Carga los usuarios desde la base de datos
+     * Load users from the database
      *
-     * @return mixed JSON con los datos de los usuarios
+     * @return mixed JSON with users data
      */
     public function load()
     {
-        $sql = "SELECT id, username FROM users LIMIT 10";
+        $sql = "SELECT id, name FROM admin LIMIT 10";
         $result = self::$db->query($sql);
         if ($result->num_rows > 0) {
             while ($row = $result->fetch_assoc()) {
-                $users[] = $row;
+                $admin[] = $row;
             }
         }
         header('Content-Type: application/json');
-        return json_encode($users);
+        return json_encode($admin);
     }
 
     /**
-     * Busca usuarios en la base de datos
+     * Search users in the database
      *
-     * @param string $search Término de búsqueda
-     * @return array Array con los datos de los usuarios encontrados
+     * @param string $search Search term
+     * @return array Array with data of found users
      */
     public function search($search)
     {
-        $sql = "SELECT id, username FROM users WHERE username LIKE '%$search%' LIMIT 10";
+        $sql = "SELECT id FROM admin WHERE name LIKE '%$search%' LIMIT 10";
         $result = self::$db->query($sql);
         if ($result->num_rows > 0) {
             while ($row = $result->fetch_assoc()) {
-                $users[] = $row;
+                $admin[] = $row;
             }
         }
-        return $users;
+        return $admin;
     }
 
     /**
-     * Imprime los usuarios en formato JSON
+     * Print users in JSON format
      *
-     * @param array $users Array con los datos de los usuarios
-     * @return mixed JSON con los datos de los usuarios
+     * @param array $admin Array with admin data
+     * @return mixed JSON with admin data
      */
-    public function printUsers($users)
+    public function printAdmin($admin)
     {
         header('Content-Type: application/json');
-        return json_encode($users);
+        return json_encode($admin);
     }
+
+    /**
+     * Proves if the admin has admin options
+     * 
+     * @param String $username The name of the admin that we want to check
+     * 
+     * @return Boolean True if the admin has admin options, false otherwise
+     */
+    public function isAdmin($name)
+    {
+        $adminQuery = "SELECT * FROM admin WHERE name=:name";
+        $statementAdmin = self::$db->prepare($adminQuery);
+        $statementAdmin->bindParam(':name', $name, PDO::PARAM_STR);
+        $statementAdmin->execute();
+        return $statementAdmin->fetchColumn();
+    }
+
+    /**
+     * Get name property.
+     * 
+     * @return string Returns the name value.
+     */
+    public function getName()
+    {
+        return $this->name;
+    }
+    /**
+     * Create a test Admin
+     */
+    public static function testAdmin(){
+        try {
+            $adminQuery = "INSERT INTO " . self::$table . " (" . implode(', ', self::$columnsDB) . ") VALUES (default, :name, :email, :password)";
+            $statementAdmin = self::$db->prepare($adminQuery);
+            $name = 'Joh123'; 
+            $email = 'admin@admin.com';
+            $password = password_hash('1234', PASSWORD_DEFAULT); 
+            $statementAdmin->bindParam(':name', $name, PDO::PARAM_STR);
+            $statementAdmin->bindParam(':email', $email, PDO::PARAM_STR);
+            $statementAdmin->bindParam(':password', $password, PDO::PARAM_STR);
+            $statementAdmin->execute();
+            error_log("SUCCESS: Created Admin by testAdmin function in Admin.php", 3, './../errorLog/error.log');
+            return true;
+        } catch (\PDOException $e) {
+            error_log("ERROR: Database error in testAdmin function, Admin.php: " . $e->getMessage(),3, './../errorLog/error.log');
+            return false;
+        }
+    }
+    
 }

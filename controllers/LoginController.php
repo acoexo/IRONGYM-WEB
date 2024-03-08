@@ -20,7 +20,7 @@ class LoginController
     public static function login(Router $router)
     {
         try {
-            $errores = [];
+            $errors = [];
             session_start();
             if (isset($_SESSION['username'])) {
                 header("Location: /user/mainpage");
@@ -28,11 +28,11 @@ class LoginController
                 if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'POST') {
                     $auth = new User($_POST);
                     $usnm = $auth->getusnm();
-                    $errores = $auth->validar();
-                    if (empty($errores)) {
+                    $errors = $auth->validate();
+                    if (empty($errors)) {
                         $resultado = $auth->existeUsuario();
                         if (!$resultado) {
-                            $errores = User::getErrores();
+                            $errors = User::getErrors();
                         } else {
                             $autenticado = $auth->comprobarPassword($resultado);
                             if ($autenticado) {
@@ -44,11 +44,11 @@ class LoginController
                         }
                     }
                 }
-                $router->render('auth/login', ['errores' => $errores]);
+                $router->render('auth/login', ['errors' => $errors]);
             }
         } catch (\Exception $e) {
             error_log("Error in login function: " . $e->getMessage() . "\n", 3, './../errorLog/error.log');
-            $router->render('auth/login', ['errores' => ['message' => $e->getMessage()]]); // Render the login view with error message
+            $router->render('auth/login', ['errors' => ['message' => $e->getMessage()]]); // Render the login view with error message
         }
     }
 
@@ -77,30 +77,30 @@ class LoginController
     public static function signup(Router $router)
     {
         try {
-            $errores = [];
+            $errors = [];
             if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $auth = new User($_POST);
-                if (empty($errores)) {
+                if (empty($errors)) {
                     $resultado = $auth->existeUsuario2();
                     debuguear($resultado);
                     if (!$resultado) {
-                        $errores = User::getErrores();
+                        $errors = User::geterrors();
                     } else {
                         $required_fields = ['name', 'date', 'tfn', 'username', 'email', 'password', 'height', 'weight', 'activity_factor', 'gen'];
                         $fields_missing = false;
                         foreach ($required_fields as $field) {
                             if (empty($_POST[$field])) {
                                 $fields_missing = true;
-                                $errores[] = "El campo $field es obligatorio.";
+                                $errors[] = "El campo $field es obligatorio.";
                             }
                         }
                         if ($_POST['activity_factor'] === '0') {
                             $fields_missing = true;
-                            $errores[] = "Por favor, seleccione una actividad física válida.";
+                            $errors[] = "Por favor, seleccione una actividad física válida.";
                         }
                         if ($_POST['gen'] === '0') {
                             $fields_missing = true;
-                            $errores[] = "Por favor, seleccione un sexo válido.";
+                            $errors[] = "Por favor, seleccione un sexo válido.";
                         }
                         // If no required fields are missing
                         if (!$fields_missing) {
@@ -111,16 +111,16 @@ class LoginController
                                 $_SESSION['username'] = $_POST['username'];
                                 header("Location: /user/mainpage");
                             } else {
-                                $errores[] = "El correo electrónico o el nombre de usuario ya existen en la base de datos. Por favor, elija otros.";
+                                $errors[] = "El correo electrónico o el nombre de usuario ya existen en la base de datos. Por favor, elija otros.";
                             }
                         }
                     }
                 }
             }
-            $router->render('auth/signup', ['errores' => $errores]);
+            $router->render('auth/signup', ['errors' => $errors]);
         } catch (\Exception $e) {
             error_log("Error in signup function: " . $e->getMessage() . "\n", 3, './../errorLog/error.log');
-            $router->render('auth/signup', ['errores' => ['message' => $e->getMessage()]]); // Render the signup view with error message
+            $router->render('auth/signup', ['errors' => ['message' => $e->getMessage()]]); // Render the signup view with error message
         }
     }
 }

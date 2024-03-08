@@ -10,9 +10,8 @@ CREATE TABLE users (
   `tfn` INT NOT NULL,
   `img` blob NULL,
   `username` VARCHAR(40) NOT NULL,
-  `email` VARCHAR(40) NOT NULL,
+  `email` VARCHAR(90) NOT NULL,
   `password` VARCHAR(60) NOT NULL,
-  `admin` bool not null,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB;
 
@@ -28,10 +27,18 @@ CREATE TABLE statistics (
   CONSTRAINT `fk_userid` FOREIGN KEY (`userid`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
+CREATE TABLE admin (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(40) NOT NULL,
+  `email` VARCHAR(90) NOT NULL,
+  `password` VARCHAR(60) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB;
+
 
 DROP USER IF EXISTS 'iron_user'@'%';
 CREATE USER 'iron_user'@'%' IDENTIFIED BY '1357';
 GRANT SELECT, INSERT, UPDATE, DELETE ON irondb.* TO 'iron_user'@'%' WITH GRANT OPTION;
 ALTER USER 'iron_user'@'%' PASSWORD EXPIRE NEVER;
 select * from users;
-select * from stadistics;
+select * from statistics;

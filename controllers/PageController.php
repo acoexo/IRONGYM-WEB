@@ -23,6 +23,16 @@ class PageController
     {
         $router->render('/paginas/index');
     }
+    /**
+     * Renders the admin index page
+     *
+     * @param Router $router The router instance
+     * @return void
+     */
+    public static function adindex(Router $router)
+    {
+        header("Location: /admin/adminlogin");
+    }
 
     /**
      * Renders the example page

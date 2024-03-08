@@ -48,9 +48,9 @@
     </section>
     <section class="errores">
     <?php 
-        if(!empty($errores)){
+        if(!empty($errors)){
             echo '<ul>';
-            foreach($errores as $error){
+            foreach($errors as $error){
                 echo "<li>".($error)."</li>";
             }
             echo '</ul>';
