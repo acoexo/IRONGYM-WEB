@@ -1,3 +1,70 @@
+<?php
+use Model\ActiveRecord;
+function load(){
+    try {
+        $ac = new ActiveRecord();
+        $pdo = $ac::getDB();
+    
+        // Consulta para obtener los primeros 10 usuarios
+        $query = "SELECT id, username FROM users LIMIT 10";
+        $statement = $pdo->prepare($query);
+        $statement->execute();
+        $users = $statement->fetchAll(PDO::FETCH_ASSOC);
+    
+        // Guardar resultados en un archivo JSON
+        $json_data = json_encode($users);
+        $file_path = '/public/src/JSON/users.json';
+    
+        if (!file_exists($file_path)) {
+            // Si el archivo no existe, crearlo
+            file_put_contents($file_path, $json_data);
+        } else {
+            // Si el archivo existe, agregar los datos al final
+            $current_data = file_get_contents($file_path);
+            $current_users = json_decode($current_data, true);
+            $current_users = array_merge($current_users, $users);
+            $json_data = json_encode($current_users);
+            file_put_contents($file_path, $json_data);
+        }
+    
+    } catch (PDOException $e) {
+        // En caso de error en la conexión o la consulta, manejarlo adecuadamente
+        http_response_code(500); // Error interno del servidor
+    }
+}
+function search(){
+    try {
+        // Obtener el término de búsqueda de la solicitud GET
+        $query = $_GET['q'];
+    
+        // Establecer la conexión a la base de datos
+        $ac = new ActiveRecord();
+        $pdo = $ac::getDB();
+    
+        // Consulta SQL para buscar usuarios que coincidan con el término de búsqueda
+        $query = "SELECT id, username FROM users WHERE username LIKE :query LIMIT 10";
+        $statement = $pdo->prepare($query);
+        $statement->bindValue(':query', '%' . $query . '%', PDO::PARAM_STR);
+        $statement->execute();
+        $results = $statement->fetchAll(PDO::FETCH_ASSOC);
+    
+        // Guardar resultados de la búsqueda en un archivo JSON (reescribir en cada búsqueda)
+        $json_data = json_encode($results);
+        $file_path = '/public/src/JSON/search.json';
+        file_put_contents($file_path, $json_data);
+    
+        // Devolver una respuesta de éxito
+    } catch (PDOException $e) {
+        // En caso de error en la conexión o la consulta, manejarlo adecuadamente
+        http_response_code(500); // Error interno del servidor
+    }
+}
+
+load();
+search();
+
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,7 +79,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HOME PAGE
-        <!-- <?php echo $usrData['username'] ?> -->
+         <?php echo $adminData['name'] ?> 
     </title>
 </head>
 <body>
@@ -21,7 +88,7 @@
             <button class="home-button" id="home-button"><img src="./../../src/img/botonMancuerna.png" alt=""></button>
             <div class="user">
                 <h2 id="user-name">
-                    <!-- <?php echo $usrData['username'] ?> -->
+                     <?php echo $adminData['name'] ?>
                 </h2>
                 <button id="user-button" class="user-button"><i class="bi bi-person"></i></button>
             </div>
@@ -30,7 +97,7 @@
         <section class="menu" id="menu">
             <div class="options-menu" id="options_menu">
                 <h2 id="user-name">
-                    <!-- <?php echo $usrData['username'] ?> -->
+                    <?php echo $adminData['name'] ?>
                 </h2>
                 <button class="cerrar-menu" id="cerrar"><i class="bi bi-x-lg"></i></button>
                 <div class="links">

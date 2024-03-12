@@ -68,6 +68,22 @@ class Admin extends ActiveRecord
         return $result;
 
     }
+    /**
+     * Gets the admin data
+     * 
+     * @param String $name The name of the admin
+     * 
+     * @return Array|null Returns an associative array with the admin's data if found, otherwise returns NULL
+     */
+    public static function loadAdminData($nm)
+    {
+        $queryUsers = "SELECT * FROM ".self::$table." WHERE name = :nm";
+        $statementUsers = self::$db->prepare($queryUsers);
+        $statementUsers->bindParam(':nm', $nm, PDO::PARAM_STR);
+        $statementUsers->execute();
+        $rowU = $statementUsers->fetch(PDO::FETCH_ASSOC);
+        return $rowU;
+    }
 
     /**
      * Verify the password is correct

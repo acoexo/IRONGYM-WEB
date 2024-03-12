@@ -93,7 +93,7 @@ class Statistic extends ActiveRecord
         return $successStats;
     }
     public function createStats($age){
-        $query = "INSERT INTO ".self::$table ."(".self::$columns.") (:userid, :age, :peso, :altura, :actividadFisica, 0)";
+        $query = "INSERT INTO ".self::$table ."(".self::$columns.") VALUES (:userid, :age, :peso, :altura, :actividadFisica, 0)";
         $stmt = self::$db->prepare($query);
         $stmt->bindParam(':userid', $this->userid, PDO::PARAM_INT);
         $stmt->bindParam(':age', $age, PDO::PARAM_INT);
@@ -111,7 +111,6 @@ class Statistic extends ActiveRecord
         $stmt->bindParam(':height', $height, PDO::PARAM_INT);
         $stmt->bindParam(':activity_factor', $activity_factor, PDO::PARAM_INT);
         $resultado = $stmt->execute();
-        error_log("Success Data: id:".$userid." height:".$height." weight:". $weight." af:". $activity_factor."\n", 3, './../errorLog/error.log');
         return $resultado;
     }
     public function getStrikes(){

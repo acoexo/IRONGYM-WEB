@@ -5,122 +5,94 @@ namespace Controllers;
 use MVC\Router;
 use Model\User;
 
-/**
- * Class LoginController
- * @package Controllers
- */
 class LoginController
 {
-    /**
-     * Handles the login functionality
-     * 
-     * @param Router $router The router instance
-     * @return void
-     */
     public static function login(Router $router)
     {
         try {
             $errors = [];
             session_start();
             if (isset($_SESSION['username'])) {
-                header("Location: /user/mainpage");
+                header("Location: " . LOGIN_REDIRECT_URL);
+                exit;
             } else {
-                if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'POST') {
+                if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $auth = new User($_POST);
-                    $usnm = $auth->getusnm();
-                    $errors = $auth->validate();
+                    $errors = $auth->validateLF();
                     if (empty($errors)) {
-                        $resultado = $auth->existeUsuario();
-                        if (!$resultado) {
-                            $errors = User::getErrors();
-                        } else {
-                            $autenticado = $auth->comprobarPassword($resultado);
+                        $usuario = $auth->existeUsuario();
+                        if ($usuario) {
+                            $autenticado = $auth->comprobarPassword($usuario);
                             if ($autenticado) {
-                                $_SESSION['username'] = $usnm;
-                                header("Location: /user/mainpage");
+                                $_SESSION['username'] = $usuario['username'];
+                                header("Location: " . LOGIN_REDIRECT_URL);
+                                exit;
                             } else {
                                 throw new \Exception('Contraseña incorrecta');
                             }
+                        } else {
+                            throw new \Exception('Usuario no encontrado');
                         }
                     }
                 }
                 $router->render('auth/login', ['errors' => $errors]);
             }
         } catch (\Exception $e) {
-            error_log("Error in login function: " . $e->getMessage() . "\n", 3, './../errorLog/error.log');
-            $router->render('auth/login', ['errors' => ['message' => $e->getMessage()]]); // Render the login view with error message
+            error_log("Error en la función de inicio de sesión: " . $e->getMessage() . "\n", 3, './../errorLog/error.log');
+            $router->render('auth/login', ['errors' => ['message' => 'Hubo un problema al iniciar sesión.']]);
         }
     }
 
-    /**
-     * Handles the logout functionality
-     * 
-     * @return void
-     */
-    public static function logout()
+    public static function logout(Router $router)
     {
         try {
             session_start();
             $_SESSION = [];
-            header('Location: /');
+            session_destroy();
+            header('Location: ' . LOGOUT_REDIRECT_URL);
+            exit;
         } catch (\Exception $e) {
-            error_log("Error in logout function: " . $e->getMessage() . "\n", 3, './../errorLog/error.log');
+            error_log("Error en la función de cierre de sesión: " . $e->getMessage() . "\n", 3, './../errorLog/error.log');
+            $router->render('error', ['errors' => ['message' => 'Hubo un problema al cerrar sesión.']]);
         }
     }
 
-    /**
-     * Handles the signup functionality
-     * 
-     * @param Router $router The router instance
-     * @return void
-     */
+    public static function renderForm($errors = [])
+    {
+        // Devolver los valores previamente ingresados (si existen)
+        return $_POST;
+    }
+
     public static function signup(Router $router)
     {
         try {
             $errors = [];
             if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $auth = new User($_POST);
+                $errors = $auth->validateSF();
                 if (empty($errors)) {
-                    $resultado = $auth->existeUsuario2();
-                    debuguear($resultado);
-                    if (!$resultado) {
-                        $errors = User::geterrors();
+                    $existingUser = $auth->existeUsuario2();
+                    error_log("Succes?: ".$_POST. "\n", 3, './../errorLog/error.log');
+                    if ($existingUser) {
+                        $auth->signup();
+                        $_SESSION['username'] = $_POST['username'];
+                        header("Location: " . SIGNUP_REDIRECT_URL);
+                        exit;
                     } else {
-                        $required_fields = ['name', 'date', 'tfn', 'username', 'email', 'password', 'height', 'weight', 'activity_factor', 'gen'];
-                        $fields_missing = false;
-                        foreach ($required_fields as $field) {
-                            if (empty($_POST[$field])) {
-                                $fields_missing = true;
-                                $errors[] = "El campo $field es obligatorio.";
-                            }
-                        }
-                        if ($_POST['activity_factor'] === '0') {
-                            $fields_missing = true;
-                            $errors[] = "Por favor, seleccione una actividad física válida.";
-                        }
-                        if ($_POST['gen'] === '0') {
-                            $fields_missing = true;
-                            $errors[] = "Por favor, seleccione un sexo válido.";
-                        }
-                        // If no required fields are missing
-                        if (!$fields_missing) {
-                            // Get form field values
-                            $existingUser = $auth->existeUsuario();
-                            if (!$existingUser) {
-                                $auth->signup();
-                                $_SESSION['username'] = $_POST['username'];
-                                header("Location: /user/mainpage");
-                            } else {
-                                $errors[] = "El correo electrónico o el nombre de usuario ya existen en la base de datos. Por favor, elija otros.";
-                            }
-                        }
+                        $errors[] = "El correo electrónico o el nombre de usuario ya existen en la base de datos. Por favor, elija otro.";
                     }
+                } else {
+                    // Renderizar el formulario con los valores previamente ingresados
+                    $formData = self::renderForm();
+                    $router->render('auth/signup', ['errors' => $errors, 'formData' => $formData]);
+                    return;
                 }
             }
+            // Renderizar el formulario con valores vacíos (para la primera carga)
             $router->render('auth/signup', ['errors' => $errors]);
         } catch (\Exception $e) {
-            error_log("Error in signup function: " . $e->getMessage() . "\n", 3, './../errorLog/error.log');
-            $router->render('auth/signup', ['errors' => ['message' => $e->getMessage()]]); // Render the signup view with error message
+            error_log("Error en la función de registro: " . $e->getMessage() . "\n", 3, './../errorLog/error.log');
+            $router->render('auth/signup', ['errors' => ['message' => 'Hubo un problema al registrarse.']]);
         }
     }
 }

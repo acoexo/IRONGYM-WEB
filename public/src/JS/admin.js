@@ -2,8 +2,8 @@ $(document).ready(function() {
     // Función para cargar los primeros 10 usuarios al cargar la página
     function loadInitialUsers() {
         $.ajax({
-            url: '../phpfunctions/load.php', // Ruta al script PHP que carga los usuarios
             type: 'GET',
+            url: '../JSON/load.json', // Ruta al script PHP que carga los usuarios
             dataType: 'json',
             success: function(response) {
                 // Limpiamos la tabla antes de agregar los nuevos resultados
@@ -14,7 +14,7 @@ $(document).ready(function() {
                 });
             },
             error: function(xhr, status, error) {
-                console.error('Error al cargar los primeros usuarios:', xhr.responseText);
+                console.error('Error al cargar los primeros usuarios:', xhr.responseText, error, status);
                 // Manejar errores aquí
             }
         });
@@ -28,7 +28,7 @@ $(document).ready(function() {
         var query = $(this).val();
 
         $.ajax({
-            url: '../phpfunctions/search.php', // Ruta al script PHP que maneja la búsqueda
+            url: '../JSON/search.json', // Ruta al script PHP que maneja la búsqueda
             type: 'GET', // Método de solicitud
             data: {q: query}, // Datos a enviar, en este caso la consulta de búsqueda
             dataType: 'json', // Tipo de datos esperados en la respuesta

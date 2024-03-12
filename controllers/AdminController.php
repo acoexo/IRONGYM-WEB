@@ -20,7 +20,7 @@ class AdminController
             $errors = [];
             session_start();
             if (isset($_SESSION['admin'])) {
-                header("Location: /admin/mp");
+                header("Location: /admin/amp");
             } else {
                 if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'POST') {
                     $auth = new Admin($_POST);
@@ -36,7 +36,7 @@ class AdminController
                                 error_log("Success Admin loged correctly: \n", 3, './../errorLog/error.log');
 
                                 $_SESSION['admin'] = $usnm;
-                                header("Location: /admin/mp");
+                                header("Location: /admin/amp");
                             } else {
                                 throw new \Exception('Wrong Password');
                             }

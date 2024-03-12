@@ -22,7 +22,7 @@ class User extends ActiveRecord
      *
      * @var string
      */
-    protected static $tabla = 'users';
+    protected static $table = 'users';
 
     /**
      * The columns of the database table for the user.
@@ -166,7 +166,7 @@ class User extends ActiveRecord
         return $rowU;
     }
 
-    
+
 
     /**
      * Proves if an user exists
@@ -189,9 +189,9 @@ class User extends ActiveRecord
 
         // Ahora podemos acceder al 'id' en $resultado de manera segura
         $id = $resultado['id'];
-        
+
         // También verificamos si hay strikes para este usuario
-        if ($this->getStrikes($id)===3) {
+        if ($this->getStrikes($id) === 3) {
             self::$errors[] = 'The user does not have permission to log in due to accumulating too many warnings.';
             return false;
         }
@@ -206,7 +206,7 @@ class User extends ActiveRecord
      */
     public function getStrikes($id)
     {
-        if(isset($id)){
+        if (isset($id)) {
             $stats = new Statistic($id);
             return $stats->getStrikes();
         }
@@ -214,11 +214,11 @@ class User extends ActiveRecord
     /**
      * Another form to prove the existence of an user
      * 
-     * @return boolean False if the password is incorrect or the user does not exist, true otherwise.
+     * @return boolean False if the user exists, true otherwise.
      */
     public function existeUsuario2()
     {
-        $query = "SELECT * FROM " . self::$tabla . " WHERE username = :username;";
+        $query = "SELECT * FROM " . self::$table . " WHERE username = :username;";
         $statement = self::$db->prepare($query);
         $statement->bindParam(':username', $this->username, PDO::PARAM_STR);
         $statement->execute();
@@ -234,9 +234,9 @@ class User extends ActiveRecord
     /**
      * Validate the login form
      * 
-     * @return array|null true if all fields are filled correctly, false otherwise
+     * @return array|null array with errors on invalid data, null if no errors found
      */
-    public function validate()
+    public function validateLF()
     {
         if (!$this->username) {
             self::$errors[] = 'El nombre de usuario es obligatorio';
@@ -246,6 +246,47 @@ class User extends ActiveRecord
         }
         return self::$errors;
     }
+    /**
+     * Validate the signup form
+     * 
+     * @return array|null array with errors on invalid data, null if no errors found
+     */
+    public function validateSF()
+    {
+        $errors = [];
+        if (empty($this->username)) {
+            $errors['username'] = 'The username field cannot be empty. Please enter a valid username.';
+        }
+        if (empty($this->password)) {
+            $errors['password'] = 'The password field cannot be empty. Please enter a valid password.';
+        }
+        if (empty($this->name)) {
+            $errors['name'] = 'The name field cannot be empty. Please enter a valid name.';
+        }
+        if (empty($this->date)) {
+            $errors['date'] = 'The birth date field cannot be empty. Please enter a valid date.';
+        }
+        if (empty($this->gen)) {
+            $errors['gender'] = 'The gender field cannot be empty. Please pick an option.';
+        }
+        if (empty($this->tfn) || !preg_match('/^\d{9,}$/', $this->tfn)) {
+            $errors['contact_phone'] = 'The contact phone field is empty or not in a valid format. Please enter a valid phone number (9 digits).';
+        }
+        if (empty($this->email) || !filter_var($this->email, FILTER_VALIDATE_EMAIL)) {
+            $errors['email'] = 'The email field is empty or not in a valid format. Please enter a valid email.';
+        }
+        if (empty($this->height) || !is_numeric($this->height)) {
+            $errors['height'] = 'The height field is empty or not a valid number. Please enter a valid number.';
+        }
+        if (empty($this->weight) || !is_numeric($this->weight)) {
+            $errors['weight'] = 'The weight field is empty or not a valid number. Please enter a valid number.';
+        }
+        if (empty($this->activity_factor)) {
+            $errors['activity_factor'] = 'The Activity Factor field cannot be empty. Please pick an option.';
+        }
+        return $errors;
+    }
+
 
     /**
      * Proves if the password provided by the form matches with the password provided by the database
@@ -307,7 +348,7 @@ class User extends ActiveRecord
     {
         $id = $this->obID($_SESSION["username"]);
         if ($this->comprobarPassword2($_SESSION["username"], $pwd)) {
-            $stats=new Statistic($id);
+            $stats = new Statistic($id);
             $successStats = $stats->deleteStats();
             if ($successStats) {
                 $queryUser = "DELETE FROM users WHERE id = :id";
@@ -391,7 +432,7 @@ class User extends ActiveRecord
     public function update($args, $id)
     {
         $stats = new Statistic();
-        $resultado=$stats->updateStats($id, $args['height'], $args['weight'], $args['activity_factor']);
+        $resultado = $stats->updateStats($id, $args['height'], $args['weight'], $args['activity_factor']);
         if ($resultado) {
             self::$errors[] = "El usuario se ha actualizado correctamente";
             error_log("Success in update function: El usuario se ha actualizado correctamente. \n", 3, './../errorLog/error.log');

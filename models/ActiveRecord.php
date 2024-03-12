@@ -24,6 +24,9 @@ class ActiveRecord
     {
         self::$db = $database;
     }
+    public static function getDB(){
+        return self::$db;
+    }
 
     /**
      * Obtiene los errors ocurridos durante la validación

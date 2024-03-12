@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+
+    <h2>Buscar por Nombre de Usuario o ID</h2>
+    <input type="text" id="busqueda_nombre_usuario" placeholder="Nombre de Usuario">
+    <input type="text" id="busqueda_id" placeholder="ID">
+    
+    <div id="datos">
+        <!-- Aquí se imprimirán los datos -->
+    </div>
+    
+    <script>
+    // Función para realizar la búsqueda con AJAX
+    function buscar() {
+        var nombreUsuario = $('#busqueda_nombre_usuario').val();
+        var id = $('#busqueda_id').val();
+        
+        $.ajax({
+            url: 'function.php',
+            type: 'GET',
+            dataType: 'json',
+            data: {
+                username: nombreUsuario,
+                id: id
+            },
+            success: function(data){
+                // Procesar los datos recibidos y mostrarlos
+                var html = '<ul>';
+                $.each(data, function(key, value){
+                    html += '<li>' + value.username + ' - ' + value.id + '</li>';
+                });
+                html += '</ul>';
+                $('#datos').html(html);
+            },
+            error: function(xhr, status, error){
+                // Manejar errores si la solicitud falla
+                console.error(error);
+            }
+        });
+    }
+    
+    // Activar la búsqueda en tiempo real al escribir en los campos
+    $('#busqueda_nombre_usuario, #busqueda_id').keyup(function(){
+        buscar(); // Llamar a la función de búsqueda al escribir
+    });
+    
+    // Llamar a la función de búsqueda al cargar la página
+    $(document).ready(function(){
+        buscar();
+    });
+    </script>
+    
+    </body>
+    </html>

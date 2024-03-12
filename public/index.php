@@ -26,7 +26,7 @@ $router->get('/admin', [PageController::class, 'adindex']);
 $router->get('/admin/adminlogin', [AdminController::class, 'adminlogin']);
 $router->post('/admin/adminlogin', [AdminController::class, 'adminlogin']);
 $router->get('/example/insertAdmin', [AdminController::class, 'example']);
-$router->get('/admin/mp', [PageController::class, 'adminpage']);
+$router->get('/admin/amp', [PageController::class, 'adminpage']);
 $router->get('/admin/logout', [LoginController::class, 'logout']);
 
 

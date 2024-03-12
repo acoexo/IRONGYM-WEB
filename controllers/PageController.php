@@ -23,16 +23,7 @@ class PageController
     {
         $router->render('/paginas/index');
     }
-    /**
-     * Renders the admin index page
-     *
-     * @param Router $router The router instance
-     * @return void
-     */
-    public static function adindex(Router $router)
-    {
-        header("Location: /admin/adminlogin");
-    }
+    
 
     /**
      * Renders the example page
@@ -146,19 +137,7 @@ class PageController
         ]);
     }
 
-    /**
-     * Renders the admin main page
-     *
-     * @param Router $router The router instance
-     * @return void
-     */
-    public static function adminpage(Router $router)
-    {
-        // $admin = Admin::get();
-        $router->render('admin/adminmainpage'/*, [
-            // 'admin' => $admin
-        ]*/);
-    }
+   
 
     /**
      * Renders the create user page
@@ -183,4 +162,39 @@ class PageController
         session_destroy();
         $router->render('/paginas/index');
     }
+
+
+
+
+
+    //Admin
+    /**
+     * Renders the admin index page
+     *
+     * @param Router $router The router instance
+     * @return void
+     */
+    public static function adindex(Router $router)
+    {
+        header("Location: /admin/adminlogin");
+    }
+
+
+     /**
+     * Renders the admin main page
+     *
+     * @param Router $router The router instance
+     * @return void
+     */
+    public static function adminpage(Router $router)
+    {
+        session_start();
+        $admin = $_SESSION['admin'];
+        $adminData = Admin::loadAdminData($admin);
+        $router->render('admin/amp', [
+            'admin' => $admin,
+            'adminData' => $adminData,
+        ]);
+    }
+
 }
